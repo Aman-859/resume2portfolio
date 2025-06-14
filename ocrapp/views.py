@@ -11,7 +11,7 @@ import pytesseract
 
 # Configure Gemini API
 genai.configure(api_key="AIzaSyAq9GSOoqOv4-3gHFwrJaoSkPhmVISt1nw")
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+ 
 
 # Extract JSON using regex
 def extract_json_from_text(text):
