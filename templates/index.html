@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0d1117;
+            min-height: 100vh;
+            color: #e6edf3;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at top, #1e3a8a 0%, #0d1117 50%);
+            z-index: -2;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(59, 130, 246, 0.05) 50%, transparent 70%);
+            animation: shimmer 8s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); opacity: 0; }
+            50% { transform: translateX(100%); opacity: 1; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: #9ca3af;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .form-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 32px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .upload-section {
+            margin-bottom: 48px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #e6edf3;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .upload-area {
+            position: relative;
+            border: 2px dashed #374151;
+            border-radius: 20px;
+            padding: 48px 24px;
+            text-align: center;
+            background: rgba(17, 24, 39, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .upload-area:focus-within {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover .upload-icon {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .upload-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #e6edf3;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            color: #9ca3af;
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+        }
+
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .file-status {
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 12px;
+            display: none;
+        }
+
+        .file-status.show {
+            display: block;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .file-status-icon {
+            color: #22c55e;
+            font-size: 1.2rem;
+            margin-right: 8px;
+        }
+
+        .file-status-text {
+            color: #22c55e;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .file-path {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            word-break: break-all;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .file-size {
+            color: #9ca3af;
+            font-size: 0.85rem;
+        }
+
+        .file-type {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .categories-section {
+            margin-bottom: 48px;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .category-card {
+            position: relative;
+            background: rgba(17, 24, 39, 0.6);
+            border: 2px solid rgba(148, 163, 184, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .category-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.15);
+        }
+
+        .category-radio {
+            display: none;
+        }
+
+        .category-radio:checked + .category-card {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.2);
+        }
+
+        .category-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .category-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 6px;
+            color: #e6edf3;
+        }
+
+        .category-description {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            line-height: 1.4;
+        }
+
+        .category-check {
+            position: absolute;
+            top:12px;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            border-radius: 50%;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0.6;
+        }
+
+        .category-radio:checked + .category-card .category-check {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            opacity: 1;
+            color: white;
+        }
+
+        .category-check::after {
+            content: '✓';
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .shades-section {
+            display: none;
+            margin-top: 24px;
+            padding: 24px;
+            background: rgba(17, 24, 39, 0.3);
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .shades-section.active {
+            display: block;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .shades-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e6edf3;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shades-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .shade-card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 2px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .shade-card:hover {
+            border-color: #8b5cf6;
+            transform: translateY(-2px);
+        }
+
+        .shade-radio {
+            display: none;
+        }
+
+        .shade-radio:checked + .shade-card {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .shade-preview {
+            width: 100%;
+            height: 60px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+        }
+
+        .shade-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #e6edf3;
+            margin-bottom: 4px;
+        }
+
+        .shade-description {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            line-height: 1.3;
+        }
+
+        .shade-check {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            border-radius: 50%;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0.6;
+        }
+
+        .shade-radio:checked + .shade-card .shade-check {
+            background: #8b5cf6;
+            border-color: #8b5cf6;
+            opacity: 1;
+            color: white;
+        }
+
+        .shade-check::after {
+            content: '✓';
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        /* Marketing Shades */
+        .marketing-1 { background: linear-gradient(135deg, #3b82f6, #1e40af); }
+        .marketing-2 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .marketing-3 { background: linear-gradient(135deg, #10b981, #047857); }
+        .marketing-4 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        /* UI Designer Shades */
+        .ui-1 { background: linear-gradient(135deg, #ec4899, #be185d); }
+        .ui-2 { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .ui-3 { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .ui-4 { background: linear-gradient(135deg, #f97316, #ea580c); }
+
+        /* IT/Software Developer Shades */
+        .dev-1 { background: linear-gradient(135deg, #1f2937, #374151); }
+        .dev-2 { background: linear-gradient(135deg, #059669, #047857); }
+        .dev-3 { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+        .dev-4 { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
+
+        /* Management Shades */
+        .mgmt-1 { background: linear-gradient(135deg, #0f172a, #1e293b); }
+        .mgmt-2 { background: linear-gradient(135deg, #0369a1, #0284c7); }
+        .mgmt-3 { background: linear-gradient(135deg, #7c2d12, #9a3412); }
+        .mgmt-4 { background: linear-gradient(135deg, #14532d, #166534); }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 20px 32px;
+            border-radius: 16px;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-btn:disabled:hover {
+            transform: none;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 32px;
+            margin-top: 48px;
+        }
+
+        .footer-text {
+            font-size: 1rem;
+            color: #9ca3af;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .heart {
+            color: #ef4444;
+            font-size: 1.125rem;
+            animation: heartbeat 2s ease-in-out infinite;
+        }
+
+        .coffee {
+            color: #92400e;
+            font-size: 1.125rem;
+        }
+
+        @keyframes heartbeat {
+            0%, 50%, 100% { transform: scale(1); }
+            25%, 75% { transform: scale(1.1); }
+        }
+
+        .donate-btn {
+            background: linear-gradient(135deg, #92400e, #f59e0b);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 20px rgba(146, 64, 14, 0.3);
+        }
+
+        .donate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(146, 64, 14, 0.4);
+        }
+
+        .form-requirements {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+
+        .requirements-title {
+            color: #3b82f6;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .requirements-list {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .requirements-list li {
+            margin-bottom: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .form-card {
+                padding: 32px 24px;
+            }
+
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .shades-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .upload-area {
+                padding: 32px 20px;
+            }
+
+            .container {
+                padding: 20px 16px;
+            }
+
+            .file-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+ 
+  .spinner-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(6px);
+    background-color: rgba(15, 23, 42, 0.3);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #3b82f6;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+ 
+
+    </style>
+</head>
+<body>
+  <div class="bg-animation"></div>
+
+  <div class="container">
+    <div class="header">
+      <h1 class="title">Portfolio Builder</h1>
+      <p class="subtitle">
+        Transform your ideas into a stunning portfolio website with AI-powered design
+      </p>
+    </div>
+
+    <div class="form-card">
+      <div class="form-requirements">
+        <div class="requirements-title">📋 Requirements</div>
+        <ul class="requirements-list">
+          <li>Upload a high-quality image (JPG, PNG, GIF, WebP) or PDF document</li>
+          <li>Choose your preferred portfolio style</li>
+          <li>Maximum file size: 10MB</li>
+          <li>For images: Recommended resolution 1920x1080 or higher</li>
+          <li>For PDFs: Any professional document (resume, portfolio, etc.)</li>
+        </ul>
+      </div>
+
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="upload-section">
+          <h2 class="section-title">📸 Upload your image</h2>
+
+          <div class="upload-area">
+            <div class="upload-icon">🎨</div>
+            <div class="upload-text">
+              Drop your image or PDF here or click to browse
+            </div>
+            <div class="upload-subtext">
+              Supports JPG, PNG, GIF, WebP, PDF • Max 10MB
+            </div>
+            <input
+              type="file"
+              name="image"
+              class="file-input"
+              id="fileInput"
+              required
+              accept="image/*,.pdf"
+            />
+            <!-- File path display -->
+            <div class="file-path" id="filePath">No file selected</div>
+          </div>
+        </div>
+
+        <div class="categories-section">
+          <h2 class="section-title">🎨 Choose your tech style</h2>
+
+          <div class="shades-grid">
+            <!-- Modern Minimal -->
+            <input
+              type="radio"
+              name="template_choice"
+              value="modern_minimal"
+              id="shade-1"
+              class="shade-radio"
+              required
+            />
+            <label for="shade-1" class="shade-card">
+              <div class="shade-preview modern_minimal"></div>
+              <div class="shade-name">🧼 Modern Minimal</div>
+              <div class="shade-description">
+                Sleek, clean lines and whitespace-focused
+              </div>
+              <div class="shade-check"></div>
+            </label>
+
+            <!-- Tech Professional -->
+            <input
+              type="radio"
+              name="template_choice"
+              value="tech_professional"
+              id="shade-2"
+              class="shade-radio"
+            />
+            <label for="shade-2" class="shade-card">
+              <div class="shade-preview tech_professional"></div>
+              <div class="shade-name">💼 Tech Professional</div>
+              <div class="shade-description">
+                Structured, corporate, high-contrast UI
+              </div>
+              <div class="shade-check"></div>
+            </label>
+
+            <!-- Portfolio Grid -->
+            <input
+              type="radio"
+              name="template_choice"
+              value="portfolio_grid"
+              id="shade-3"
+              class="shade-radio"
+            />
+            <label for="shade-3" class="shade-card">
+              <div class="shade-preview portfolio_grid"></div>
+              <div class="shade-name">🗂️ Portfolio Grid</div>
+              <div class="shade-description">
+                Masonry layout, card-based project showcase
+              </div>
+              <div class="shade-check"></div>
+            </label>
+
+            <!-- Creative Bold -->
+            <input
+              type="radio"
+              name="template_choice"
+              value="creative_bold"
+              id="shade-4"
+              class="shade-radio"
+            />
+            <label for="shade-4" class="shade-card">
+              <div class="shade-preview creative_bold"></div>
+              <div class="shade-name">🎨 Creative Bold</div>
+              <div class="shade-description">
+                Vibrant colors, standout typography, dynamic accents
+              </div>
+              <div class="shade-check"></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="submit-btn" id="submitBtn">
+          🚀 Generate My Portfolio
+        </button>
+      </form>
+
+      
+    </div>
+
+     <div id="pageSpinner" class="spinner-backdrop">
+  <div class="spinner"></div>
+</div>
+
+    <div class="footer">
+      <div class="footer-text">
+        Made with <span class="heart">❤️</span> and lots of
+        <span class="coffee">☕</span>
+      </div>
+      <a href="/" class="donate-btn">
+        <span class="coffee">☕</span> Buy me a coffee
+      </a>
+    </div>
+  </div>
+
+ 
+   <script>
+  window.addEventListener('load', function () {
+    const spinner = document.getElementById('pageSpinner');
+    if (spinner) {
+      spinner.style.display = 'none';
+    }
+  });
+
+  const input = document.getElementById('fileInput');
+  const pathDisplay = document.getElementById('filePath');
+  const spinner = document.getElementById('pageSpinner');
+  const form = document.querySelector('form'); // Target the form instead of just the button
+
+  if (input) {
+    input.addEventListener('change', () => {
+      const file = input.files[0];
+      pathDisplay.textContent = file ? file.name : 'No file selected';
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', () => {
+      if (spinner) {
+        spinner.style.display = 'flex';
+      }
+    });
+  }
+</script>
+
+ 
+</body>
+
+</html>
