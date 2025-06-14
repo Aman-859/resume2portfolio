@@ -10,7 +10,7 @@ import numpy as np
 import pytesseract
 
 # Configure Gemini API
-genai.configure(api_key="AIzaSyAq9GSOoqOv4-3gHFwrJaoSkPhmVISt1nw")
+genai.configure(api_key="API_KEY")
  
 
 # Extract JSON using regex
